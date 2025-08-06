@@ -19,8 +19,7 @@ on:
       kernels_to_build:
         description: |
           Comma-separated list of kernels to build/release, e.g.:
-          a12-5.10,a13-5.10,a13-5.15,a14-5.15,a14-6.1,a15-6.6
-          or "all" to build every kernel.
+          a12,a13,a14,a15 or "all" to build every kernel.
         required: true
         type: string
         default: 'all'
@@ -71,9 +70,9 @@ jobs:
     with:
       kernelsu_variant: ${{ inputs.kernelsu_variant }}
 
-  build-kernel-a12-5-10:
+  build-kernel-a12:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a12-5.10')
-    uses: ./.github/workflows/kernel-a12-5.10.yml
+    uses: ./.github/workflows/kernel-a12.yml
     secrets: inherit
     with:
       make_release: ${{ inputs.make_release }}
@@ -83,9 +82,9 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_kpm: ${{ inputs.use_kpm }}
 
-  build-kernel-a13-5-10:
+  build-kernel-a13:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a13-5.10')
-    uses: ./.github/workflows/kernel-a13-5.10.yml
+    uses: ./.github/workflows/kernel-a13.yml
     secrets: inherit
     with:
       make_release: ${{ inputs.make_release }}
@@ -95,33 +94,9 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_kpm: ${{ inputs.use_kpm }}
 
-  build-kernel-a13-5-15:
-    if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a13-5.15')
-    uses: ./.github/workflows/kernel-a13-5.15.yml
-    secrets: inherit
-    with:
-      make_release: ${{ inputs.make_release }}
-      kernelsu_variant: ${{ inputs.kernelsu_variant }}
-      kernelsu_branch: ${{ inputs.kernelsu_branch }}
-      version: ${{ inputs.version }}
-      use_zram: ${{ inputs.use_zram }}
-      use_kpm: ${{ inputs.use_kpm }}
-
-  build-kernel-a14-5-15:
-    if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14-5.15')
-    uses: ./.github/workflows/kernel-a14-5.15.yml
-    secrets: inherit
-    with:
-      make_release: ${{ inputs.make_release }}
-      kernelsu_variant: ${{ inputs.kernelsu_variant }}
-      kernelsu_branch: ${{ inputs.kernelsu_branch }}
-      version: ${{ inputs.version }}
-      use_zram: ${{ inputs.use_zram }}
-      use_kpm: ${{ inputs.use_kpm }}
-
-  build-kernel-a14-6-1:
+  build-kernel-a14:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14-6.1')
-    uses: ./.github/workflows/kernel-a14-6.1.yml
+    uses: ./.github/workflows/kernel-a14.yml
     secrets: inherit
     with:
       make_release: ${{ inputs.make_release }}
@@ -131,9 +106,9 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_kpm: ${{ inputs.use_kpm }}
 
-  build-kernel-a15-6-6:
+  build-kernel-a15:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a15-6.6')
-    uses: ./.github/workflows/kernel-a15-6.6.yml
+    uses: ./.github/workflows/kernel-a15.yml
     secrets: inherit
     with:
       make_release: ${{ inputs.make_release }}
@@ -147,30 +122,24 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - get_manager
-      - build-kernel-a12-5-10
-      - build-kernel-a13-5-10
-      - build-kernel-a13-5-15
-      - build-kernel-a14-5-15
-      - build-kernel-a14-6-1
-      - build-kernel-a15-6-6
+      - build-kernel-a12
+      - build-kernel-a13
+      - build-kernel-a14
+      - build-kernel-a15
     if: always()
     outputs:
       should_release: ${{ steps.check.outputs.should_release }}
     env:
-      SHOULD_RUN_A12_5_10: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a12-5.10') }}
-      SHOULD_RUN_A13_5_10: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a13-5.10') }}
-      SHOULD_RUN_A13_5_15: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a13-5.15') }}
-      SHOULD_RUN_A14_5_15: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14-5.15') }}
-      SHOULD_RUN_A14_6_1: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14-6.1') }}
-      SHOULD_RUN_A15_6_6: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a15-6.6') }}
+      SHOULD_RUN_A12: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a12') }}
+      SHOULD_RUN_A13: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a13') }}
+      SHOULD_RUN_A14: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14') }}
+      SHOULD_RUN_A15: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a15') }}
       
       RESULT_GET_MANAGER: ${{ needs.get_manager.result }}
-      RESULT_A12_5_10: ${{ needs.build-kernel-a12-5-10.result }}
-      RESULT_A13_5_10: ${{ needs.build-kernel-a13-5-10.result }}
-      RESULT_A13_5_15: ${{ needs.build-kernel-a13-5-15.result }}
-      RESULT_A14_5_15: ${{ needs.build-kernel-a14-5-15.result }}
-      RESULT_A14_6_1: ${{ needs.build-kernel-a14-6-1.result }}
-      RESULT_A15_6_6: ${{ needs.build-kernel-a15-6-6.result }}
+      RESULT_A12: ${{ needs.build-kernel-a12.result }}
+      RESULT_A13: ${{ needs.build-kernel-a13.result }}
+      RESULT_A14: ${{ needs.build-kernel-a14.result }}
+      RESULT_A15: ${{ needs.build-kernel-a15.result }}
     steps:
       - name: Determine if release should proceed
         id: check
@@ -210,12 +179,10 @@ jobs:
             fi
           }
           
-          check_kernel_job "a12-5.10" "$SHOULD_RUN_A12_5_10" "$RESULT_A12_5_10"
-          check_kernel_job "a13-5.10" "$SHOULD_RUN_A13_5_10" "$RESULT_A13_5_10"
-          check_kernel_job "a13-5.15" "$SHOULD_RUN_A13_5_15" "$RESULT_A13_5_15"
-          check_kernel_job "a14-5.15" "$SHOULD_RUN_A14_5_15" "$RESULT_A14_5_15"
-          check_kernel_job "a14-6.1" "$SHOULD_RUN_A14_6_1" "$RESULT_A14_6_1"
-          check_kernel_job "a15-6.6" "$SHOULD_RUN_A15_6_6" "$RESULT_A15_6_6"
+          check_kernel_job "a12" "$SHOULD_RUN_A12" "$RESULT_A12"
+          check_kernel_job "a13" "$SHOULD_RUN_A13" "$RESULT_A13"
+          check_kernel_job "a14" "$SHOULD_RUN_A14" "$RESULT_A14"
+          check_kernel_job "a15" "$SHOULD_RUN_A15 "$RESULT_A15"
           
           echo "Final decision - SHOULD_PROCEED: $SHOULD_PROCEED"
           echo "Accumulated Errors: $ERROR_MESSAGE"
