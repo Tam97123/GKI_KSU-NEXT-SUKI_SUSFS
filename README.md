@@ -1,8 +1,8 @@
-# Wild Kernels for Android
+# Kernels for Android
 
 ## Your warranty is no longer valid!
 
-I am **not responsible** for bricked devices, damaged hardware, or any issues that arise from using this kernel.
+I am **not responsible** for bricked devices, damaged hardware, or any issues from using this kernel.
 
 **Please** do thorough research and fully understand the features included in this kernel before flashing it!
 
@@ -17,15 +17,12 @@ By flashing this kernel, **YOU** are choosing to make these modifications. If so
 # Kernels:
  
 [GKI](https://github.com/WildKernels/GKI_KernelSU_SUSFS)  
-[Sultan](https://github.com/WildKernels/Sultan_KernelSU_SUSFS)  
-[OnePlus](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS)  
 
 ---
 
 # Other Links:
 
 [Kernel Patches](https://github.com/WildKernels/kernel_patches)  
-[Old Build Scripts](https://github.com/TheWildJames/kernel_build_scripts)  
 [Kernel Flasher](https://github.com/fatalcoder524/KernelFlasher)  
 
 ---
@@ -49,6 +46,7 @@ Follow the steps for GKI:
 - **KernelSU**: Developed by [tiann](https://github.com/tiann/KernelSU).
 - **KernelSU-Next**: Developed by [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next).
 - **Magic-KSU**: Developed by [5ec1cff](https://github.com/5ec1cff/KernelSU).
+- **SukiSU-Ultra**: Devloped by [ShirkNeko](https://github.com/ShirkNeko).
 - **SUSFS**: Developed by [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git).
 - **SUSFS Module**: Developed by [sidex15](https://github.com/sidex15).
 - **Sultan Kernels**: Developed by [kerneltoast](https://github.com/kerneltoast).
@@ -71,16 +69,12 @@ Flashing this kernel will void your warranty, and there is always a risk of bric
 
 ---
 
-[Telegram](https://t.me/TheWildJames)  
-[Telegram Group](https://t.me/Wild_Kernels)  
+[Telegram](https://t.me/prostamer)    
 
 # Special thanks to the following people for their contributions!
 This helps me alot! <3
 
 [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git) - Created SUSFS!  
 [sidex15](https://github.com/sidex15) - Created module!  
-[backslashxx](https://github.com/backslashxx) - Helped with patches!  
-[Teemo](https://github.com/liqideqq) - Helped with patches!  
-[幕落](https://github.com/MuLuo688) - Donation!
 
 If you have contributed and are not here please remind me!
