@@ -234,34 +234,6 @@ jobs:
       - check-build-status
       - get_manager
     if: always()
-    env:
-      REPO_OWNER: ShirkNeko
-      REPO_NAME: GKI_KernelSU_SUSFS
-      GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-      RELEASE_NAME: "GKI Kernel: ${{ inputs.kernelsu_variant == 'Next' && 'KernelSU-' || '' }} ${{ inputs.kernelsu_variant }}"
-      INITIAL_RELEASE_NOTES: |
-        This release includes **${{ inputs.kernelsu_variant == 'Next' && 'KernelSU' || '' }}${{ inputs.kernelsu_variant }}**
-        
-        Features:
-        -> ${{ inputs.kernelsu_variant == 'Next' && 'KernelSU-' || '' }}${{ inputs.kernelsu_variant }}-${{ inputs.kernelsu_branch }}
-        -> SUSFS ඞ v1.5.9
-        -> Manual Syscall Hooks for better hiding
-        -> Magic Mount Support
-        -> Simple hiding for LineageOS detection
-        -> Futile hiding for jit-zygote-cache detection
-        -> Wireguard Support
-        -> BBR Support
-        ${{ inputs.use_kpm && '-> KPM Support' || '' }}
-        -> **LZ4KD&ONEPLUS_LZ4K** ${{ inputs.use_zram && 'supported' || 'not supported' }}
-        
-        <details>
-        <summary>Notes:</summary>
-        - -> In SUS SU Mode 2, it will show as disabled or incompatible, the reason is that non-kprobe hooks were used (when compiling the kernel), and non-kprobe hooks are no longer needed!
-        - -> In the latest version of susfs, flashing AK3 compressed package with Kernel Flasher will brick your device, try [Horizon Kernel Flasher]\(https://github.com/libxzr/HorizonKernelFlasher)!
-        </details>
-        
-        Modules:
-        -> https://github.com/sidex15/ksu_module_susfs
     steps:
       - name: Conditional Release Check
         id: release_check
@@ -350,11 +322,11 @@ jobs:
             echo "SukiSU version: $KSU_VERSION"
             cd ..
             rm -rf suki-tmp
-            echo "RELEASE_NAME=\"GKI Kernel: SukiSU ($KSU_VERSION) & SUSFS v1.5.9\"" >> $GITHUB_ENV
+            echo "RELEASE_NAME=\"GKI Kernel: SukiSU ($KSU_VERSION) & SUSFS v1.5.9-prostamer\"" >> $GITHUB_ENV
             
           else
             echo "Using default naming for variant: ${{ inputs.kernelsu_variant }}"
-            echo "RELEASE_NAME=\"GKI Kernel: ${{ inputs.kernelsu_variant }} & SUSFS v1.5.9\"" >> $GITHUB_ENV
+            echo "RELEASE_NAME=\"GKI Kernel: ${{ inputs.kernelsu_variant }} & SUSFS v1.5.9-prostamer\"" >> $GITHUB_ENV
           fi
           
       - name: Fetch KSU and SUSFS Commit Info
