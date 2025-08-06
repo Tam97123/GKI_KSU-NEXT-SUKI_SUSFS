@@ -56,12 +56,6 @@ on:
         required: true
         type: boolean
         default: true
-      get_manager:
-        description: 'Get the latest KSU Manager at the same time?'
-        required: true
-        type: boolean
-        default: false
-
 jobs:
   build-kernel-a12:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a12-5.10')
@@ -127,7 +121,6 @@ jobs:
       SHOULD_RUN_A14: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a14') }}
       SHOULD_RUN_A15: ${{ contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a15') }}
       
-      RESULT_GET_MANAGER: ${{ needs.get_manager.result }}
       RESULT_A12: ${{ needs.build-kernel-a12.result }}
       RESULT_A13: ${{ needs.build-kernel-a13.result }}
       RESULT_A14: ${{ needs.build-kernel-a14.result }}
@@ -138,16 +131,6 @@ jobs:
         run: |
           SHOULD_PROCEED="true"
           ERROR_MESSAGE=""
-          
-          echo "--- Checking Job Statuses ---"
-          echo "get_manager result: $RESULT_GET_MANAGER"
-          
-          # 1. Check get_manager job only if it was supposed to run
-          if [[ "${{ inputs.get_manager }}" == "true" ]]; then
-            if [[ "$RESULT_GET_MANAGER" != "success" ]]; then
-              SHOULD_PROCEED="false"
-              ERROR_MESSAGE+="get_manager job did not succeed (result: $RESULT_GET_MANAGER). "
-            fi
           fi
           
           # Function to check a kernel job
@@ -191,7 +174,6 @@ jobs:
       contents: write
     needs:
       - check-build-status
-      - get_manager
     if: always()
     steps:
       - name: Conditional Release Check
