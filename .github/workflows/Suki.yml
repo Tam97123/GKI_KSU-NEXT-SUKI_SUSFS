@@ -63,13 +63,6 @@ on:
         default: false
 
 jobs:
-  get_manager:
-    if: ${{ inputs.get_manager }}
-    uses: ./.github/workflows/get-manager.yml
-    secrets: inherit
-    with:
-      kernelsu_variant: ${{ inputs.kernelsu_variant }}
-
   build-kernel-a12:
     if: contains(github.event.inputs.kernels_to_build, 'all') || contains(github.event.inputs.kernels_to_build, 'a12-5.10')
     uses: ./.github/workflows/kernel-a12.yml
@@ -121,7 +114,6 @@ jobs:
   check-build-status:
     runs-on: ubuntu-latest
     needs:
-      - get_manager
       - build-kernel-a12
       - build-kernel-a13
       - build-kernel-a14
