@@ -14,12 +14,6 @@ By flashing this kernel, **YOU** are choosing to make these modifications. If so
 
 ---
 
-# Kernels:
- 
-[GKI](https://github.com/WildKernels/GKI_KernelSU_SUSFS)  
-
----
-
 # Other Links:
 
 [Kernel Patches](https://github.com/WildKernels/kernel_patches)  
@@ -75,6 +69,7 @@ Flashing this kernel will void your warranty, and there is always a risk of bric
 This helps me alot! <3
 
 [simonpunk](https://gitlab.com/simonpunk/susfs4ksu.git) - Created SUSFS!  
-[sidex15](https://github.com/sidex15) - Created module!  
+[sidex15](https://github.com/sidex15) - Created module!
+[TheWildJames](https://github.com/TheWildJames) - Huge thanks for him, without him this repository won't be created :D!
 
 If you have contributed and are not here please remind me!
