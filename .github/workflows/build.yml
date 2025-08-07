@@ -24,6 +24,24 @@ on:
       kernelsu_branch:
         required: true
         type: string
+      version:
+        description: 'Custom version name (e.g., characters after 5.10.198 or leave blank to use default version number)'
+        required: false
+        type: string
+      build:
+        description: 'Custom build name (e.g., date after #1 or leave blank to use default build number)'
+        required: false
+        type: string
+      use_zram:
+        description: 'Enable more ZRAM algorithms (For Suki)?'
+        required: true
+        type: boolean
+        default: true
+      use_kpm:
+        description: 'Enable KPM functionality (For Suki)?'
+        required: true
+        type: boolean
+        default: true
       kernelsu_branch_other:
         required: false
         type: string
@@ -118,6 +136,7 @@ jobs:
           git clone https://github.com/WildPlusKernel/AnyKernel3.git -b "$ANYKERNEL_BRANCH"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/WildPlusKernel/kernel_patches.git
+          git clone https://github.com/ShirkNeko/SukiSU_patch.git
 
       - name: Initialize and Sync Kernel Source
         run: |
@@ -149,6 +168,8 @@ jobs:
                 echo "BRANCH=-s next" >> $GITHUB_ENV
               elif [[ "${{ inputs.kernelsu_variant }}" == "WILD" ]]; then
                 echo "BRANCH=-s wild" >> $GITHUB_ENV
+              elif [[ "${{ inputs.kernelsu_variant }}" == "SUKI" ]]; then
+                echo "BRANCH=-s suki" >> $GITHUB_ENV
               fi
               ;;
             "Other")
@@ -182,6 +203,11 @@ jobs:
             "MKSU")
               echo "Adding KernelSU MKSU..."
               curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
+              ;;
+            "SUKI")
+              echo "Adding SukiSu-Ultra KSU..."
+              curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
+          fi
               ;;
           esac
           
@@ -238,9 +264,10 @@ jobs:
               cp ../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
               patch -p1 --forward < fix_kernel_compat.c.patch
               ;;
-            "MKSU")
-              echo "Applying SUSFS patches for MKSU..."
-              cd ./KernelS
+            "SUKI")
+              echo "Applying SUSFS patches for SukiSU-Ultra..."
+              cd ./SukiS
+          else
               ;;
           esac
 
@@ -293,6 +320,88 @@ jobs:
           cd "$CONFIG/common"
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 --forward -F 3 < 69_hide_stuff.patch
+          
+      - name: Apply patch LZ4KD & ZSTDN (Suki only)
+        if: ${{ inputs.use_zram }}
+        run: |
+          echo "更改为配置目录: $CONFIG..."
+          cd "$CONFIG/common"
+          cp -r ../../SukiSU_patch/other/zram/lz4k/include/linux/* ./include/linux/
+          cp -r ../../SukiSU_patch/other/zram/lz4k/lib/* ./lib/
+          cp -r ../../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto/
+          cp -r ../../SukiSU_patch/other/zram/lz4k_oplus ./lib/
+
+          cp ../../SukiSU_patch/other/zram/zram_patch/${{ inputs.kernel_version }}/lz4kd.patch ./
+          echo "Apply patching LZ4KD"
+          patch -p1 -F 3 < lz4kd.patch || true
+          echo 'Successfully!'
+
+          cp ../../SukiSU_patch/other/zram/zram_patch/${{ inputs.kernel_version }}/lz4k_oplus.patch ./
+          echo "Apply patching LZ4K_OPLUS"
+          patch -p1 -F 3 < lz4k_oplus.patch || true
+          echo 'Successfully'
+
+      - name: Apply patch hide
+        run: |
+          echo "更改为配置目录: $CONFIG..."
+          cd "$CONFIG/common"
+          # Apply additional patch
+          if [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
+          cp ../../SukiSU_patch/69_hide_stuff.patch ./
+          patch -p1 -F 3 < 69_hide_stuff.patch
+          else
+            cp ../../kernel_patches/69_hide_stuff.patch ./
+            patch -p1 -F 3 < 69_hide_stuff.patch
+          fi
+
+      - name: Config LZ4KD & Lz4k_oplus
+        if: ${{ inputs.use_zram }}
+        run: |
+          set -x
+          set -e
+          echo "Writing Z4KD&ZSTDN depend on config"
+          CONFIG_FILE="$CONFIG/common/arch/arm64/configs/gki_defconfig"
+
+          if [ "${{ inputs.kernel_version }}" = "5.10" ]; then
+            echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
+            echo "CONFIG_ZRAM=y" >> "$CONFIG_FILE"
+            echo "CONFIG_MODULE_SIG=n" >> "$CONFIG_FILE"
+            echo "CONFIG_CRYPTO_LZO=y" >> "$CONFIG_FILE"
+            echo "CONFIG_ZRAM_DEF_COMP_LZ4KD=y" >> "$CONFIG_FILE"
+          fi
+
+          if [ "${{ inputs.kernel_version }}" != "6.6" ] && [ "${{ inputs.kernel_version }}" != "5.10" ]; then
+            sed -i 's/CONFIG_MODULE_SIG=y/CONFIG_MODULE_SIG=n/g' "$CONFIG_FILE"
+            if grep -q "CONFIG_ZSMALLOC" -- "$CONFIG_FILE"; then
+                echo "提示：文件 $CONFIG_FILE 包含字符串 CONFIG_ZSMALLOC。"
+                sed -i 's/CONFIG_ZSMALLOC=m/CONFIG_ZSMALLOC=y/g' "$CONFIG_FILE"
+            else
+                echo "警告：文件 $CONFIG_FILE 不包含字符串 CONFIG_ZSMALLOC。"
+                echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
+            fi
+
+            sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
+          fi
+
+          if [ "${{ inputs.kernel_version }}" = "6.6" ]; then
+            echo "CONFIG_ZSMALLOC=y" >> "$CONFIG_FILE"
+            sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' "$CONFIG_FILE"
+          fi
+
+          if [ "${{ inputs.android_version }}" = "android14" ] || [ "${{ inputs.android_version }}" = "android15" ]; then
+            sed -i 's/"drivers\/block\/zram\/zram\.ko",//g; s/"mm\/zsmalloc\.ko",//g' "$CONFIG/common/modules.bzl"
+            echo "CONFIG_MODULE_SIG_FORCE=n" >> "$CONFIG_FILE"
+            echo 'Android14_Bazel:已修复zram&zsmalloc'
+          fi
+
+          if grep -q "CONFIG_ZSMALLOC=y" "$CONFIG_FILE" && grep -q "CONFIG_ZRAM=y" "$CONFIG_FILE"; then
+            echo "CONFIG_CRYPTO_LZ4HC=y" >> "$CONFIG_FILE"
+            echo "CONFIG_CRYPTO_LZ4K=y" >> "$CONFIG_FILE"
+            echo "CONFIG_CRYPTO_LZ4KD=y" >> "$CONFIG_FILE"
+            echo "CONFIG_CRYPTO_842=y" >> "$CONFIG_FILE"
+            echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> "$CONFIG_FILE"
+            echo "CONFIG_ZRAM_WRITEBACK=y" >> "$CONFIG_FILE"
+          fi
 
       - name: Fix WiFi and Bluetooth on Samsung 6.6 GKI devices
         if: ${{ ( inputs.kernel_version == '6.6' ) }}
@@ -370,7 +479,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
 
-          if [ "${{ inputs.kernelsu_variant }}" == "NEXT" ] || [ "${{ inputs.kernelsu_variant }}" == "WILD" ]; then
+          if [ "${{ inputs.kernelsu_variant }}" == "NEXT" ] || [ "${{ inputs.kernelsu_variant }}" == "WILD" ] || [ "${{ inputs.kernelsu_variant }}" == "SUKI" ]; then
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
           else
             echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -382,7 +491,7 @@ jobs:
           if [ -f "build/build.sh" ]; then
               perl -pi -e 's/-dirty//' ./common/scripts/setlocalversion
               perl -0777 -pi -e 's/(.*)(echo "\$res")/$1echo "\$res-Next-v\$KSUVER-SUSFS-v1.5.9-prostamer"/s' ./common/scripts/setlocalversion
-              perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 Wed Aus 06 17:30:00 UTC 2025"}' ./common/scripts/mkcompile_h
+              perl -pi -e 's{UTS_VERSION="\$\(echo \$UTS_VERSION \$CONFIG_FLAGS \$TIMESTAMP \| cut -b -\$UTS_LEN\)"}{UTS_VERSION="#1 Thu Aug 07 11:11:00 UTC 2025"}' ./common/scripts/mkcompile_h
           else
               #Remove -maybe-dirty
               perl -pi -e 's/-maybe-dirty//g' ./build/kernel/kleaf/impl/stamp.bzl
@@ -391,7 +500,8 @@ jobs:
               echo "CONFIG_LOCALVERSION=\"-NEXT-v$KSUVER-SUSFS-v1.5.9-prostamer\"" >> ./common/arch/arm64/configs/gki_defconfig
 
               #Set Kernel Timestamp
-              perl -pi -e 's/build-timestamp = \$\(or \$\(KBUILD_BUILD_TIMESTAMP\), \$\(build-timestamp-auto\)\)/build-timestamp = "Wed Aus 06 17:30:00 UTC 2025"/' ./common/init/Makefile
+              if
+                perl -pi -e 's/build-timestamp = \$\(or \$\(KBUILD_BUILD_TIMESTAMP\), \$\(build-timestamp-auto\)\)/build-timestamp = " Thu Aug 07 11:11:00 UTC 2025"/' ./common/init/Makefile
 
               #Remove Abi Exports and Error
               rm -rf ./common/android/abi_gki_protected_exports_*
